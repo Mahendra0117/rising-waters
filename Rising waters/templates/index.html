@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Risk Analytics Portal</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts (Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            /* Points directly to your local file path within the Flask framework framework */
+            background: url('/static/360_F_211524227_Ett8aboQvVnROAFtqu3S1pW99Y3Th9vm.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding: 1rem 0;
+        }
+        
+        /* Dark tint layer to ensure crisp text contrast over the image background */
+        body::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.4);
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .main-card {
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+        .app-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 1rem 1.25rem 0;
+        }
+        .user-chip {
+            border-radius: 999px;
+            padding: 0.55rem 0.85rem;
+            color: #334155;
+            background: #f8fafc;
+            font-size: 0.84rem;
+            font-weight: 800;
+        }
+        .hello-message {
+            padding: 0.85rem 1rem;
+            border-radius: 14px;
+            background: #eef6ff;
+            color: #102fb9;
+            font-weight: 800;
+            line-height: 1.4;
+            margin-bottom: 1.2rem;
+        }
+        .nav-links {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+        .nav-links a {
+            border-radius: 999px;
+            padding: 0.55rem 0.85rem;
+            color: #334155;
+            background: #f8fafc;
+            font-size: 0.84rem;
+            font-weight: 800;
+            text-decoration: none;
+        }
+        .nav-links a:hover {
+            color: #102fb9;
+        }
+        
+        .card-header-custom {
+            padding: 2.5rem 2rem 1.5rem 2rem;
+            text-align: center;
+        }
+        .card-header-custom h2 {
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 1.75rem;
+        }
+        .card-header-custom p {
+            color: #475569;
+            font-size: 0.95rem;
+            margin-top: 0.5rem;
+            font-weight: 500;
+        }
+        .form-label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+        .live-value {
+            color: #102fb9;
+            font-weight: 700;
+        }
+        .input-group-custom {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: #64748b;
+            z-index: 10;
+        }
+        .form-control-custom {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 2.8rem;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            color: #0f172a;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .form-control-custom:focus {
+            background-color: #ffffff;
+            border-color: #475569;
+            box-shadow: 0 0 0 4px rgba(71, 85, 105, 0.12);
+            outline: none;
+        }
+        .form-control-custom.is-hot {
+            border-color: #dc2626;
+            box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.08);
+        }
+        .range-track {
+            height: 7px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+            margin-top: 0.65rem;
+        }
+        .range-fill {
+            width: 0%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #14b8a6, #f59e0b, #dc2626);
+            transition: width 0.18s ease;
+        }
+        .helper-text {
+            color: #64748b;
+            font-size: 0.78rem;
+            margin-top: 0.45rem;
+        }
+        .live-preview {
+            background: #f8fafc;
+            border: 1px solid #dbe3ef;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 1.4rem;
+        }
+        .preview-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+        }
+        .preview-label {
+            color: #475569;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .preview-score {
+            color: #0f172a;
+            font-size: 1.35rem;
+            font-weight: 800;
+        }
+        .preview-bar {
+            height: 12px;
+            border-radius: 999px;
+            background: #e2e8f0;
+            overflow: hidden;
+        }
+        .preview-fill {
+            width: 0%;
+            height: 100%;
+            background: #16a34a;
+            transition: width 0.2s ease, background-color 0.2s ease;
+        }
+        .preview-note {
+            margin: 0.8rem 0 0;
+            color: #475569;
+            font-size: 0.84rem;
+            line-height: 1.5;
+        }
+        .quick-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .btn-soft {
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 0.75rem;
+            background: #ffffff;
+            color: #334155;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+        .btn-soft:hover {
+            border-color: #102fb9;
+            color: #102fb9;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #102fb9 0%, #052996 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(16, 47, 185, 0.2);
+            transition: all 0.2s ease;
+        }
+        .btn-submit:hover {
+            background: linear-gradient(135deg, #102fb9 0%, #052996 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(16, 50, 185, 0.3);
+        }
+        .btn-submit.loading {
+            opacity: 0.82;
+            pointer-events: none;
+        }
+        .result-panel {
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin-top: 2rem;
+            border: 1px solid transparent;
+            animation: slideUp 0.28s ease;
+        }
+        .panel-danger {
+            background-color: #fef2f2;
+            border-color: #fee2e2;
+            color: #991b1b;
+        }
+        .panel-success {
+            background-color: #f0fdf4;
+            border-color: #dcfce7;
+            color: #166534;
+        }
+        .panel-warning {
+            background-color: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+        .panel-title {
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .result-meter {
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.12);
+            overflow: hidden;
+            margin-top: 0.9rem;
+        }
+        .result-meter-fill {
+            height: 100%;
+            width: var(--probability, 0%);
+            border-radius: inherit;
+            background: currentColor;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        @media (max-width: 576px) {
+            body {
+                align-items: flex-start;
+            }
+            .card-header-custom {
+                padding: 2rem 1.25rem 1rem;
+            }
+            .quick-actions {
+                grid-template-columns: 1fr;
+            }
+            .app-nav {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            .nav-links {
+                justify-content: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-5">
+            <div class="card main-card">
+                <div class="app-nav">
+                    <div class="user-chip"><i class="fa-solid fa-user"></i> {{ username }}</div>
+                    <div class="nav-links">
+                        <a href="{{ url_for('history') }}"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                        <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Logout</a>
+                    </div>
+                </div>
+                <div class="card-header-custom">
+                    <h2>Flood Risk Analytics Portal</h2>
+                    <p>Machine Learning Predictive Environment</p>
+                </div>
+                
+                <div class="card-body px-4 pb-5 pt-2">
+                    <div class="hello-message">
+                        Hello {{ username }}, here you can predict flood risk.
+                    </div>
+
+                    <div class="live-preview" aria-live="polite">
+                        <div class="preview-top">
+                            <div>
+                                <div class="preview-label">Live risk preview</div>
+                                <div id="previewLevel" class="preview-score">Waiting for inputs</div>
+                            </div>
+                            <div id="previewScore" class="preview-score">0%</div>
+                        </div>
+                        <div class="preview-bar">
+                            <div id="previewFill" class="preview-fill"></div>
+                        </div>
+                        <p id="previewNote" class="preview-note">Enter values below to see an instant estimate before running the ML model.</p>
+                    </div>
+
+                    <form id="riskForm" action="/predict" method="POST">
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>Annual Rainfall (mm)</span>
+                                <span class="live-value" data-value-for="annual_rainfall">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-cloud-rain input-icon"></i>
+                                <input type="number" step="any" min="0" max="5000" name="annual_rainfall" class="form-control-custom" placeholder="e.g., 2400" value="{{ form_values.annual_rainfall if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="annual_rainfall"></div></div>
+                            <div class="helper-text">Higher annual rainfall usually increases flood pressure.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>Cloud Visibility Index (0 - 10)</span>
+                                <span class="live-value" data-value-for="cloud_visibility">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-eye input-icon"></i>
+                                <input type="number" step="any" min="0" max="10" name="cloud_visibility" class="form-control-custom" placeholder="e.g., 5.5" value="{{ form_values.cloud_visibility if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="cloud_visibility"></div></div>
+                            <div class="helper-text">Lower visibility often suggests heavier cloud cover and storm conditions.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>Monsoon Seasonal Rainfall (mm)</span>
+                                <span class="live-value" data-value-for="monsoon_rainfall">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-water input-icon"></i>
+                                <input type="number" step="any" min="0" max="4000" name="monsoon_rainfall" class="form-control-custom" placeholder="e.g., 1600" value="{{ form_values.monsoon_rainfall if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="monsoon_rainfall"></div></div>
+                            <div class="helper-text">Seasonal rainfall is one of the strongest model signals.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>River Level (%)</span>
+                                <span class="live-value" data-value-for="river_level">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-gauge-high input-icon"></i>
+                                <input type="number" step="any" min="0" max="100" name="river_level" class="form-control-custom" placeholder="e.g., 72" value="{{ form_values.river_level if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="river_level"></div></div>
+                            <div class="helper-text">River levels above 70% deserve close attention.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>Soil Moisture (%)</span>
+                                <span class="live-value" data-value-for="soil_moisture">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-seedling input-icon"></i>
+                                <input type="number" step="any" min="0" max="100" name="soil_moisture" class="form-control-custom" placeholder="e.g., 68" value="{{ form_values.soil_moisture if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="soil_moisture"></div></div>
+                            <div class="helper-text">Wet soil absorbs less water during new rainfall.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <span>Drainage Risk Score (0 - 100)</span>
+                                <span class="live-value" data-value-for="drainage_score">--</span>
+                            </label>
+                            <div class="input-group-custom">
+                                <i class="fa-solid fa-road-barrier input-icon"></i>
+                                <input type="number" step="any" min="0" max="100" name="drainage_score" class="form-control-custom" placeholder="e.g., 45" value="{{ form_values.drainage_score if form_values else '' }}" required>
+                            </div>
+                            <div class="range-track"><div class="range-fill" data-fill-for="drainage_score"></div></div>
+                            <div class="helper-text">A higher score means weaker drainage capacity.</div>
+                        </div>
+
+                        <div class="quick-actions">
+                            <button class="btn-soft" id="sampleBtn" type="button">Use sample data</button>
+                            <button class="btn-soft" id="clearBtn" type="button">Clear form</button>
+                        </div>
+
+                        <div class="d-grid mt-5">
+                            <button id="submitBtn" type="submit" class="btn btn-submit">
+                                <span id="submitText">Run Predictive Inference</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    {% if prediction_text %}
+                        {% if alert_class == 'danger' %}
+                            <div class="result-panel panel-danger" role="alert">
+                                <div class="panel-title"><i class="fa-solid fa-triangle-exclamation"></i> Threat Level Warning</div>
+                                <p class="mb-0 small">{{ prediction_text }}</p>
+                                {% if probability %}<p class="mb-0 small mt-2"><strong>Flood probability:</strong> {{ probability }}%</p>{% endif %}
+                                {% if accuracy %}<p class="mb-0 small"><strong>Model accuracy:</strong> {{ accuracy }}%</p>{% endif %}
+                                {% if probability %}<div class="result-meter" style="--probability: {{ probability }}%"><div class="result-meter-fill"></div></div>{% endif %}
+                            </div>
+                        {% elif alert_class == 'warning' %}
+                            <div class="result-panel panel-warning" role="alert">
+                                <div class="panel-title"><i class="fa-solid fa-circle-exclamation"></i> Watch Advisory</div>
+                                <p class="mb-0 small">{{ prediction_text }}</p>
+                                {% if probability %}<p class="mb-0 small mt-2"><strong>Flood probability:</strong> {{ probability }}%</p>{% endif %}
+                                {% if accuracy %}<p class="mb-0 small"><strong>Model accuracy:</strong> {{ accuracy }}%</p>{% endif %}
+                                {% if probability %}<div class="result-meter" style="--probability: {{ probability }}%"><div class="result-meter-fill"></div></div>{% endif %}
+                            </div>
+                        {% else %}
+                            <div class="result-panel panel-success" role="alert">
+                                <div class="panel-title"><i class="fa-solid fa-circle-check"></i> System Nominal</div>
+                                <p class="mb-0 small">{{ prediction_text }}</p>
+                                {% if probability %}<p class="mb-0 small mt-2"><strong>Flood probability:</strong> {{ probability }}%</p>{% endif %}
+                                {% if accuracy %}<p class="mb-0 small"><strong>Model accuracy:</strong> {{ accuracy }}%</p>{% endif %}
+                                {% if probability %}<div class="result-meter" style="--probability: {{ probability }}%"><div class="result-meter-fill"></div></div>{% endif %}
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+            <p class="text-center text-light small mt-4 opacity-75">Predictive Engine v{{ model_version or '2.0.0' }}{% if accuracy %} · Accuracy {{ accuracy }}%{% endif %}{% if roc_auc %} · ROC-AUC {{ roc_auc }}%{% endif %}</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const limits = {
+        annual_rainfall: 5000,
+        cloud_visibility: 10,
+        monsoon_rainfall: 4000,
+        river_level: 100,
+        soil_moisture: 100,
+        drainage_score: 100
+    };
+
+    const sampleValues = {
+        annual_rainfall: 2450,
+        cloud_visibility: 4.2,
+        monsoon_rainfall: 1680,
+        river_level: 74,
+        soil_moisture: 69,
+        drainage_score: 58
+    };
+
+    const form = document.querySelector("#riskForm");
+    const fields = [...form.querySelectorAll("input[type='number']")];
+    const previewFill = document.querySelector("#previewFill");
+    const previewScore = document.querySelector("#previewScore");
+    const previewLevel = document.querySelector("#previewLevel");
+    const previewNote = document.querySelector("#previewNote");
+    const submitBtn = document.querySelector("#submitBtn");
+    const submitText = document.querySelector("#submitText");
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function getValue(name) {
+        const field = form.elements[name];
+        return field.value === "" ? null : Number(field.value);
+    }
+
+    function scorePreview() {
+        const values = {
+            annual_rainfall: getValue("annual_rainfall"),
+            cloud_visibility: getValue("cloud_visibility"),
+            monsoon_rainfall: getValue("monsoon_rainfall"),
+            river_level: getValue("river_level"),
+            soil_moisture: getValue("soil_moisture"),
+            drainage_score: getValue("drainage_score")
+        };
+
+        if (Object.values(values).some((value) => value === null || Number.isNaN(value))) {
+            return null;
+        }
+
+        const weighted =
+            (values.annual_rainfall / limits.annual_rainfall) * 18 +
+            ((limits.cloud_visibility - values.cloud_visibility) / limits.cloud_visibility) * 12 +
+            (values.monsoon_rainfall / limits.monsoon_rainfall) * 24 +
+            (values.river_level / limits.river_level) * 20 +
+            (values.soil_moisture / limits.soil_moisture) * 14 +
+            (values.drainage_score / limits.drainage_score) * 12;
+
+        return Math.round(clamp(weighted, 0, 100));
+    }
+
+    function getLevel(score) {
+        if (score >= 80) return ["Critical", "#dc2626", "Extreme inputs detected. Run the ML model and follow local alerts closely."];
+        if (score >= 62) return ["High", "#ea580c", "Conditions look risky. The ML model should be checked before making decisions."];
+        if (score >= 38) return ["Moderate", "#d97706", "Some conditions are elevated. Continue monitoring the values."];
+        return ["Low", "#16a34a", "Inputs are currently within a lower-risk range."];
+    }
+
+    function updateField(field) {
+        const name = field.name;
+        const value = getValue(name);
+        const max = limits[name];
+        const display = document.querySelector(`[data-value-for="${name}"]`);
+        const fill = document.querySelector(`[data-fill-for="${name}"]`);
+
+        if (value === null || Number.isNaN(value)) {
+            display.textContent = "--";
+            fill.style.width = "0%";
+            field.classList.remove("is-hot");
+            return;
+        }
+
+        const percent = clamp((value / max) * 100, 0, 100);
+        display.textContent = name === "cloud_visibility" ? value.toFixed(1) : Math.round(value);
+        fill.style.width = `${percent}%`;
+        field.classList.toggle("is-hot", name !== "cloud_visibility" && percent >= 75);
+    }
+
+    function updatePreview() {
+        fields.forEach(updateField);
+        const score = scorePreview();
+
+        if (score === null) {
+            previewScore.textContent = "0%";
+            previewLevel.textContent = "Waiting for inputs";
+            previewFill.style.width = "0%";
+            previewFill.style.backgroundColor = "#16a34a";
+            previewNote.textContent = "Enter values below to see an instant estimate before running the ML model.";
+            return;
+        }
+
+        const [level, color, note] = getLevel(score);
+        previewScore.textContent = `${score}%`;
+        previewLevel.textContent = level;
+        previewFill.style.width = `${score}%`;
+        previewFill.style.backgroundColor = color;
+        previewNote.textContent = note;
+    }
+
+    fields.forEach((field) => {
+        field.addEventListener("input", updatePreview);
+        field.addEventListener("change", updatePreview);
+    });
+
+    document.querySelector("#sampleBtn").addEventListener("click", () => {
+        Object.entries(sampleValues).forEach(([name, value]) => {
+            form.elements[name].value = value;
+        });
+        updatePreview();
+    });
+
+    document.querySelector("#clearBtn").addEventListener("click", () => {
+        fields.forEach((field) => {
+            field.value = "";
+        });
+        updatePreview();
+        fields[0].focus();
+    });
+
+    form.addEventListener("submit", () => {
+        submitBtn.classList.add("loading");
+        submitText.textContent = "Analyzing live data...";
+    });
+
+    updatePreview();
+</script>
+</body>
+</html>
